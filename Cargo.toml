@@ -1,7 +1,17 @@
 [package]
 name = "infisical-rs"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+authors = ["Daniel H. <daniel@infisical.com>"]
+description = "Official Rust-based library to programmatically interact with the Infisical API. The library is fully asynchronous and supports authentication and secrets management."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/infisical/infisical-rs"
+keywords = ["Infisical", "Secrets", "SDK", "Rust"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 serde = { version = "1.0.182", features = ["derive"] }

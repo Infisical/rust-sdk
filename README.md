@@ -1,1 +1,1 @@
-# rust-sdk
+# infisical-rs — The official Infisical Rust SDK

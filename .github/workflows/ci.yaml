@@ -1,5 +1,7 @@
 on:
     push:
+        tags:
+            - "*.*.*"
         branches:
             - main
         paths-ignore:

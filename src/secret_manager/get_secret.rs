@@ -17,7 +17,7 @@ pub async fn get_secret(client: &mut Client, request: GetSecretOptions) -> Resul
         "secretPath": request.path.clone().unwrap_or("/".to_string()), // default is "/"
         "expandSecretReferences": request.expand_secret_references.unwrap_or(true).to_string(),
         "type": request.r#type.clone().unwrap_or("shared".to_string()), // default is shared
-        "include_imports": request.include_imports.unwrap_or(false).to_string(),
+        "include_imports": "true",
     });
 
     let url = build_url(base_url, json);

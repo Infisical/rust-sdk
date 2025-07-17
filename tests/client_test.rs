@@ -105,7 +105,6 @@ async fn e2e_test() {
             path: None,
             expand_secret_references: None,
             r#type: None,
-            include_imports: None,
             environment: env_vars.environment.clone(),
             project_id: env_vars.project_id.clone(),
         })
@@ -179,7 +178,6 @@ async fn e2e_test() {
             path: None,
             expand_secret_references: None,
             r#type: None,
-            include_imports: None,
         })
         .await;
 

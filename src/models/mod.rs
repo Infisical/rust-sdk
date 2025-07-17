@@ -67,7 +67,6 @@ pub struct GetSecretOptions {
     pub path: Option<String>,
     pub expand_secret_references: Option<bool>,
     pub r#type: Option<String>,
-    pub include_imports: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

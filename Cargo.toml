@@ -1,12 +1,12 @@
 [package]
-name = "infisical-rs"
+name = "infisical"
 version = "0.0.1"
 edition = "2021"
 authors = ["Daniel H. <daniel@infisical.com>"]
 description = "Official Rust-based library to programmatically interact with the Infisical API. The library is fully asynchronous and supports authentication and secrets management."
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/infisical/infisical-rs"
+repository = "https://github.com/infisical/rust-sdk"
 keywords = ["Infisical", "Secrets", "SDK", "Rust"]
 
 [package.metadata.docs.rs]

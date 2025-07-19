@@ -149,7 +149,7 @@ impl Client {
             .await?;
 
         let mut headers = reqwest::header::HeaderMap::new();
-        let formatted_token = format!("Bearer {}", token);
+        let formatted_token = format!("Bearer {token}");
 
         let mut auth_value = reqwest::header::HeaderValue::from_str(&formatted_token)?;
         auth_value.set_sensitive(true);

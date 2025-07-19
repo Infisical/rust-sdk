@@ -48,7 +48,7 @@ async fn test_get_secret() {
         .await
         .expect("Failed to get secret");
 
-    println!("Fetched secret: {:?}", secret);
+    println!("Fetched secret: {secret:?}");
 
     // Verify the contents of the secret.
     assert_eq!(secret.secret_key, "FOO");
@@ -89,7 +89,7 @@ async fn test_list_secrets() {
         .await
         .expect("Failed to list secrets");
 
-    println!("Fetched secrets: {:?}", secrets);
+    println!("Fetched secrets: {secrets:?}");
 
     assert!(!secrets.is_empty());
 }
@@ -130,7 +130,7 @@ async fn test_create_and_delete_secret() {
         .await
         .expect("Failed to create secret");
 
-    println!("Created secret: {:?}", secret);
+    println!("Created secret: {secret:?}");
 
     // Verify the contents of the secret.
     assert_eq!(secret.secret_key, "RUST_SDK_KEY");
@@ -150,7 +150,7 @@ async fn test_create_and_delete_secret() {
         .await
         .expect("Failed to delete secret");
 
-    println!("Deleted secret: {:?}", del_secret);
+    println!("Deleted secret: {del_secret:?}");
 
     // Verify the contents of the secret.
     assert_eq!(del_secret.secret_key, secret.secret_key);
@@ -191,7 +191,7 @@ async fn test_update_secret() {
         .await
         .expect("Failed to update secret");
 
-    println!("Updated secret: {:?}", secret);
+    println!("Updated secret: {secret:?}");
 
     // Verify the contents of the secret.
     assert_eq!(secret.secret_key, "UPDATED_NAME");

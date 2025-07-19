@@ -1,12 +1,15 @@
-pub mod auth_manager;
+// Infisical
+// (c) 2025 Infisical, under MIT license
+
+//! Official Rust SDK for Infisical
+
+pub mod auth;
 pub mod client;
 pub mod error;
-pub mod helper;
-pub mod models;
-pub mod secret_manager;
+pub mod resources;
 
-pub use auth_manager::*;
-pub use client::{Client, ClientBuilder};
-pub use error::{Error, Result};
-pub use models::*;
-pub use secret_manager::*;
+#[cfg(test)]
+mod tests;
+
+pub use auth::AuthMethod;
+pub use client::Client;

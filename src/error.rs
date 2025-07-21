@@ -24,4 +24,8 @@ pub enum InfisicalError {
     /// Failed to parse a URL.
     #[error("Failed to parse URL: {0}")]
     UrlParseError(#[from] ParseError),
+
+    /// Attempted to make an authenticated request without logging in first.
+    #[error("Client is not authenticated. Please call .login() first.")]
+    NotAuthenticated,
 }

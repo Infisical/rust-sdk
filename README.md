@@ -18,14 +18,14 @@ use infisical::resources::secrets::GetSecretRequest;
 use std::error::Error;
 
 async fn fetch_secret() -> Result<(), Box<dyn Error>> {
-    // 1. Set up your authentication method.
-    let auth_method = AuthMethod::new_universal_auth("<your-client-id>", "<your-client-secret>");
-
-    // 2. Build the client. You can chain methods to configure it.
-    let client = Client::builder(auth_method)
-        .base_url("https://app.infisical.com")
+    // 1. Build the client. You can chain methods to configure it.
+    let mut client = Client::builder()
         .build()
         .await?;
+
+    // 2. Set up your authentication method and log in.
+    let auth_method = AuthMethod::new_universal_auth("<your-client-id>", "<your-client-secret>");
+    client.login(auth_method).await?;
 
     // 3. Build a request to get a secret.
     // Required parameters (name, project_id, environment) are passed to `builder()`.
@@ -49,6 +49,7 @@ async fn fetch_secret() -> Result<(), Box<dyn Error>> {
 The SDK methods are organized into the following high-level categories:
 
 - `Client::builder()`: The main entry point for creating a client.
+- `client.login()`: Allows client to make authenticated requests to the API.
 - `client.secrets()`: Provides access to all CRUD operations for secrets.
 
 ### `secrets`

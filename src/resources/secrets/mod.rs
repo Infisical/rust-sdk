@@ -62,6 +62,10 @@ impl<'a> SecretsClient<'a> {
         &self,
         url: String,
     ) -> Result<T, InfisicalError> {
+        if !self.client.logged_in {
+            return Err(InfisicalError::NotAuthenticated);
+        }
+
         let response = self
             .client
             .http_client
@@ -81,6 +85,10 @@ impl<'a> SecretsClient<'a> {
         url: String,
         body: &serde_json::Value,
     ) -> Result<T, InfisicalError> {
+        if !self.client.logged_in {
+            return Err(InfisicalError::NotAuthenticated);
+        }
+
         let response = self
             .client
             .http_client

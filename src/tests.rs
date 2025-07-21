@@ -27,16 +27,14 @@ async fn test_get_secret() {
     let project_id =
         std::env::var("INFISICAL_PROJECT_ID").expect("INFISICAL_PROJECT_ID must be set");
 
-    let auth_method = AuthMethod::UniversalAuth {
-        client_id,
-        client_secret,
-    };
-
-    let client = Client::builder(auth_method)
+    let mut client = Client::builder()
         .base_url("http://localhost:8080")
         .build()
         .await
         .expect("Failed to build client");
+
+    let auth_method = AuthMethod::new_universal_auth(client_id, client_secret);
+    client.login(auth_method).await.unwrap();
 
     let request = GetSecretRequest::builder("FOO", project_id, "dev")
         .path("/")
@@ -66,16 +64,14 @@ async fn test_list_secrets() {
     let project_id =
         std::env::var("INFISICAL_PROJECT_ID").expect("INFISICAL_PROJECT_ID must be set");
 
-    let auth_method = AuthMethod::UniversalAuth {
-        client_id,
-        client_secret,
-    };
-
-    let client = Client::builder(auth_method)
+    let mut client = Client::builder()
         .base_url("http://localhost:8080")
         .build()
         .await
         .expect("Failed to build client");
+
+    let auth_method = AuthMethod::new_universal_auth(client_id, client_secret);
+    client.login(auth_method).await.unwrap();
 
     let request = ListSecretsRequest::builder(project_id, "dev")
         .attach_to_process_env(true)
@@ -105,16 +101,14 @@ async fn test_create_and_delete_secret() {
     let project_id =
         std::env::var("INFISICAL_PROJECT_ID").expect("INFISICAL_PROJECT_ID must be set");
 
-    let auth_method = AuthMethod::UniversalAuth {
-        client_id,
-        client_secret,
-    };
-
-    let client = Client::builder(auth_method)
+    let mut client = Client::builder()
         .base_url("http://localhost:8080")
         .build()
         .await
         .expect("Failed to build client");
+
+    let auth_method = AuthMethod::new_universal_auth(client_id, client_secret);
+    client.login(auth_method).await.unwrap();
 
     println!("Creating secret...");
 
@@ -167,16 +161,14 @@ async fn test_update_secret() {
     let project_id =
         std::env::var("INFISICAL_PROJECT_ID").expect("INFISICAL_PROJECT_ID must be set");
 
-    let auth_method = AuthMethod::UniversalAuth {
-        client_id,
-        client_secret,
-    };
-
-    let client = Client::builder(auth_method)
+    let mut client = Client::builder()
         .base_url("http://localhost:8080")
         .build()
         .await
         .expect("Failed to build client");
+
+    let auth_method = AuthMethod::new_universal_auth(client_id, client_secret);
+    client.login(auth_method).await.unwrap();
 
     let request = UpdateSecretRequest::builder("UPDATE_ME", &project_id, "dev")
         .path("/")

@@ -9,18 +9,21 @@ use crate::{
 /// Infisical Client. Used to interact with the Infisical API.
 ///
 /// Use the [Client::builder()] to construct an instance.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Client {
     /// Base URL of your Infisical instance.
     pub base_url: String,
     /// HTTP Client used to make requests.
     pub http_client: reqwest::Client,
+    request_timeout: Duration,
+    user_agent: String,
+    /// Indicates whether the client has successfully logged in.
+    pub logged_in: bool,
 }
 
 /// A builder for creating an [Infisical Client](Client).
 #[derive(Debug)]
 pub struct ClientBuilder {
-    auth_method: AuthMethod,
     base_url: Option<String>,
     user_agent: Option<String>,
     request_timeout: Option<Duration>,
@@ -28,9 +31,8 @@ pub struct ClientBuilder {
 
 impl ClientBuilder {
     /// Creates a new `ClientBuilder`.
-    fn new(auth_method: AuthMethod) -> Self {
+    fn new() -> Self {
         Self {
-            auth_method,
             base_url: None,
             user_agent: None,
             request_timeout: None,
@@ -66,31 +68,14 @@ impl ClientBuilder {
 
     /// Builds the `Client`.
     pub async fn build(self) -> Result<Client, InfisicalError> {
-        let params = ClientParams {
-            auth_method: Some(self.auth_method),
-            base_url: self.base_url,
-            user_agent: self.user_agent,
-            request_timeout: self.request_timeout,
-        };
-
-        Client::new(params).await
+        Client::new(self.base_url, self.user_agent, self.request_timeout).await
     }
-}
-
-#[derive(Debug)]
-pub(crate) struct ClientParams<S: Into<String>> {
-    pub auth_method: Option<AuthMethod>,
-    pub base_url: Option<S>,
-    pub request_timeout: Option<Duration>,
-    pub user_agent: Option<S>,
 }
 
 impl Client {
     /// Creates a new builder for the Infisical Client.
-    ///
-    /// # Arguments
-    ///
-    /// * `auth_method` - The authentication method to use.
+    /// The client will be initialized without authentication.
+    /// Use [Client::login()] to add authentication later.
     ///
     /// # Examples
     ///
@@ -99,53 +84,57 @@ impl Client {
     ///
     /// #[tokio::main]
     /// async fn main() {
-    ///     let auth_method = AuthMethod::UniversalAuth {
-    ///         client_id: "YOUR_CLIENT_ID".to_string(),
-    ///         client_secret: "YOUR_CLIENT_SECRET".to_string(),
-    ///     };
-    ///
-    ///     let client = Client::builder(auth_method)
+    ///     let mut client = Client::builder()
     ///         .build()
+    ///         .await
+    ///         .unwrap();
+    ///
+    ///     let auth_method = AuthMethod::new_universal_auth("<your-client-id>", "<your-client-secret>");
+    ///
+    ///     client.login(auth_method)
     ///         .await
     ///         .unwrap();
     /// }
     /// ```
-    pub fn builder(auth_method: AuthMethod) -> ClientBuilder {
-        ClientBuilder::new(auth_method)
+    pub fn builder() -> ClientBuilder {
+        ClientBuilder::new()
     }
 
-    /// Internal method to create a new Infisical Client.
+    /// Internal method to create a new Infisical Client without authentication.
     /// The public interface is [Client::builder()].
-    async fn new<S>(params: ClientParams<S>) -> Result<Self, InfisicalError>
-    where
-        S: Into<String> + Clone,
-    {
-        let base_url = params
-            .base_url
-            .map(|s| s.into())
-            .unwrap_or_else(|| "https://app.infisical.com".to_string());
+    async fn new(
+        base_url_opt: Option<String>,
+        user_agent_opt: Option<String>,
+        request_timeout_opt: Option<Duration>,
+    ) -> Result<Self, InfisicalError> {
+        let base_url = base_url_opt.unwrap_or_else(|| "https://app.infisical.com".to_string());
 
-        let user_agent = params
-            .user_agent
-            .map(|s| s.into())
-            .unwrap_or_else(|| "infisical-rs".to_string());
+        let user_agent = user_agent_opt.unwrap_or_else(|| "infisical-rs".to_string());
 
-        let timeout = params
-            .request_timeout
-            .unwrap_or_else(|| Duration::from_secs(10));
+        let timeout = request_timeout_opt.unwrap_or_else(|| Duration::from_secs(10));
 
-        let temp_http_client = reqwest::Client::builder()
+        // Initialize http_client without any authorization headers
+        let http_client = reqwest::Client::builder()
             .timeout(timeout)
             .user_agent(user_agent.clone())
             .use_rustls_tls()
             .build()?;
 
-        let auth_method = params
-            .auth_method
-            .ok_or(InfisicalError::InvalidAuthMethod)?;
+        Ok(Self {
+            base_url,
+            http_client,
+            request_timeout: timeout,
+            user_agent,
+            logged_in: false,
+        })
+    }
 
-        let token = AuthHelper::new(&base_url)
-            .get_access_token(&temp_http_client, auth_method)
+    /// Logs in the client using the provided authentication method.
+    /// This will obtain an access token and update the internal HTTP client
+    /// to include the authorization headers for subsequent requests.
+    pub async fn login(&mut self, auth_method: AuthMethod) -> Result<(), InfisicalError> {
+        let token = AuthHelper::new(&self.base_url)
+            .get_access_token(&self.http_client, auth_method)
             .await?;
 
         let mut headers = reqwest::header::HeaderMap::new();
@@ -155,17 +144,17 @@ impl Client {
         auth_value.set_sensitive(true);
         headers.insert(reqwest::header::AUTHORIZATION, auth_value);
 
-        let http_client = reqwest::Client::builder()
-            .timeout(timeout)
-            .user_agent(user_agent)
+        let new_http_client = reqwest::Client::builder()
+            .timeout(self.request_timeout)
+            .user_agent(self.user_agent.clone())
             .use_rustls_tls()
             .default_headers(headers)
             .build()?;
 
-        Ok(Self {
-            base_url,
-            http_client,
-        })
+        self.http_client = new_http_client;
+        self.logged_in = true;
+
+        Ok(())
     }
 
     /// Access secrets operations.

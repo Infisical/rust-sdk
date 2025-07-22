@@ -1,60 +1,46 @@
-# infisical-rs — The official Infisical Rust SDK
+# infisical — The official Infisical Rust SDK
 
-The Infisical Rust SDK provides a convenient way to interact with Infisical programmatically.
+The Infisical Rust SDK ([docs.rs](https://docs.rs/infisical)) provides a convenient and ergonomic way to interact with Infisical programmatically using modern and idiomatic Rust.
 
 ### Installation
+
 ```bash
 cargo add infisical
 ```
 
 ### Getting Started
+
+The easiest way to get started is to use the builder pattern for both the client and your requests.
+
 ```rust
-async fn fetch_secret() {
-    let client = ClientBuilder::new()
-        .with_host_url("https://app.infisical.com")
-        .with_request_timeout(Duration::from_secs(10))
+use infisical::{Client, AuthMethod};
+use infisical::resources::secrets::GetSecretRequest;
+use std::error::Error;
+
+async fn fetch_secret() -> Result<(), Box<dyn Error>> {
+    // 1. Build the client. You can chain methods to configure it.
+    let mut client = Client::builder()
+        .build()
+        .await?;
+
+    // 2. Set up your authentication method and log in.
+    let auth_method = AuthMethod::new_universal_auth("<your-client-id>", "<your-client-secret>");
+    client.login(auth_method).await?;
+
+    // 3. Build a request to get a secret.
+    // Required parameters (name, project_id, environment) are passed to `builder()`.
+    let request = GetSecretRequest::builder("API_KEY", "<your-project-id>", "dev")
+        .path("/") // Optional parameters are set with builder methods.
         .build();
 
-    let mut client = match client {
-        Ok(client) => client,
-        Err(e) => {
-            panic!("Failed to build client: {:?}", e);
-        }
-    };
+    // 4. Make the API call.
+    let secret = client.secrets().get(request).await?;
 
-    let login_response = client
-        .auth()
-        .universal()
-        .login(UniversalAuthLoginOptions {
-            client_id: "<machine-identity-client-id>".to_string(),
-            client_secret: "<machine-identity-client-secret>".to_string(),
-        })
-        .await;
+    println!("Fetched secret key: {}", secret.secret_key);
+    // For security, avoid printing the secret value in production code!
+    // println!("Secret value: {}", secret.secret_value);
 
-    if let Err(e) = login_response {
-        panic!("Failed to login: {:?}", e);
-    }
-
-    let secret = client
-        .secrets()
-        .get(GetSecretOptions {
-            secret_name: "API_KEY".to_string(),
-            path: Some("/".to_string()),
-            environment: "dev".to_string(),
-            project_id: "<your-project-id>".to_string(),
-            expand_secret_references: None,
-            r#type: None,
-        })
-        .await;
-
-    let secret = match secret {
-        Ok(secret) => secret,
-        Err(e) => {
-            panic!("Failed to get secret: {:?}", e);
-        }
-    };
-
-    println!("Secret: {:?}", secret);
+    Ok(())
 }
 ```
 
@@ -62,178 +48,136 @@ async fn fetch_secret() {
 
 The SDK methods are organized into the following high-level categories:
 
-- `auth`: Handles authentication flows.
-- `secrets`: Perform CRUD operations for secrets.
-
-
-### `auth`
-
-#### Universal Auth
-
-
-**Example**
-```rust
-let res = client
-    .auth()
-    .universal()
-    .login(UniversalAuthLoginOptions {
-        client_id: "<machine-identity-client-id>".to_string(),
-        client_secret: "<machine-identity-client-secret>".to_string(),
-    })
-    .await;
-```
-
-**Parameters**
-* `options` (object):
-  * `client_id` (string): The client ID of your Machine Identity.
-  * `client_secret` (string): The client secret of your Machine Identity.
-
-
+- `Client::builder()`: The main entry point for creating a client.
+- `client.login()`: Allows client to make authenticated requests to the API.
+- `client.secrets()`: Provides access to all CRUD operations for secrets.
 
 ### `secrets`
+
+All secret operations are accessed via `client.secrets()`. Each operation has a dedicated request builder.
 
 #### Create Secret
 
 Create a new secret in your project.
 
 **Example**
+
 ```rust
-let created_secret = client
-    .secrets()
-    .create(CreateSecretOptions {
-        project_id: "<your-project-id>".to_string(),
-        path: Some("/".to_string()),
-        environment: "dev".to_string(),
-        secret_name: "API_KEY".to_string(),
-        secret_value: "your-secret-value".to_string(),
-        secret_comment: None,
-        skip_multiline_encoding: None,
-        r#type: None,
-    })
-    .await?;
+use infisical::resources::secrets::CreateSecretRequest;
+
+let request = CreateSecretRequest::builder(
+    "API_KEY",
+    "your-secret-value",
+    "<your-project-id>",
+    "dev"
+)
+.path("/")
+.secret_comment("A comment for the new secret")
+.build();
+
+let created_secret = client.secrets().create(request).await?;
 ```
 
 **Parameters**
-* `options` (object):
-  * `project_id` (string): The ID of your project.
-  * `path` (Option<string>): The path where the secret should be stored (e.g., "/").
-  * `environment` (string): The environment name (e.g., "dev", "prod").
-  * `secret_name` (string): The name of the secret.
-  * `secret_value` (string): The value of the secret.
-  * `secret_comment` (Option<string>): Optional comment for the secret.
-  * `skip_multiline_encoding` (Option<bool>): Whether to skip multiline encoding.
-  * `r#type` (Option<string>): The type of the secret. `(shared|personal)`, defaults to `shared`.
+
+- `secret_name`, `secret_value`, `project_id`, `environment`: Required parameters passed to the `builder()` function.
+- `.path(path)`: Optional method to set the secret's path (defaults to `/`).
+- `.secret_comment(comment)`: Optional method to add a comment.
+- `.skip_multiline_encoding(bool)`: Optional method to control multiline encoding (defaults to `false`).
+- `.r#type(type)`: Optional method to set the secret type (`shared` or `personal`), defaults to `shared`.
 
 #### Get Secret
 
 Retrieve a specific secret by name.
 
 **Example**
+
 ```rust
-let secret = client
-    .secrets()
-    .get(GetSecretOptions {
-        secret_name: "API_KEY".to_string(),
-        path: Some("/".to_string()),
-        environment: "dev".to_string(),
-        project_id: "<your-project-id>".to_string(),
-        expand_secret_references: None,
-        r#type: None,
-    })
-    .await?;
+use infisical::resources::secrets::GetSecretRequest;
+
+let request = GetSecretRequest::builder("API_KEY", "<your-project-id>", "dev")
+    .path("/")
+    .build();
+
+let secret = client.secrets().get(request).await?;
 ```
 
 **Parameters**
-* `options` (object):
-  * `secret_name` (string): The name of the secret to retrieve.
-  * `path` (Option<string>): The path where the secret is stored.
-  * `environment` (string): The environment name.
-  * `project_id` (string): The ID of your project.
-  * `expand_secret_references` (Option<bool>): Whether to expand secret references.
-  * `r#type` (Option<string>): The type of the secret. `(shared|personal)`, defaults to `shared`.
+
+- `secret_name`, `project_id`, `environment`: Required parameters passed to the `builder()` function.
+- `.path(path)`: Optional method to set the secret's path (defaults to `/`).
+- `.expand_secret_references(bool)`: Optional method to control secret reference expansion (defaults to `true`).
+- `.r#type(type)`: Optional method to set the secret type (`shared` or `personal`), defaults to `shared`.
 
 #### List Secrets
 
-List all secrets in a project environment.
+List all secrets in a project and environment.
 
 **Example**
+
 ```rust
-let secrets = client
-    .secrets()
-    .list(ListSecretsOptions {
-        environment: "dev".to_string(),
-        project_id: "<your-project-id>".to_string(),
-        path: None,
-        expand_secret_references: None,
-        recursive: None,
-        attach_to_process_env: None,
-    })
-    .await?;
+use infisical::resources::secrets::ListSecretsRequest;
+
+let request = ListSecretsRequest::builder("<your-project-id>", "dev")
+    .path("/")
+    .recursive(true)
+    .build();
+
+let secrets = client.secrets().list(request).await?;
 ```
 
 **Parameters**
-* `options` (object):
-  * `environment` (string): The environment name.
-  * `project_id` (string): The ID of your project.
-  * `path` (Option<string>): The path to list secrets from.
-  * `expand_secret_references` (Option<bool>): Whether to expand secret references.
-  * `recursive` (Option<bool>): Whether to recursively list secrets from sub-folders.
-  * `attach_to_process_env` (Option<bool>): Whether to attach secrets to the process environment.
+
+- `project_id`, `environment`: Required parameters passed to the `builder()` function.
+- `.path(path)`: Optional method to set the path from which to list secrets (defaults to `/`).
+- `.expand_secret_references(bool)`: Optional method to control secret reference expansion (defaults to `true`).
+- `.recursive(bool)`: Optional method to recursively list secrets from sub-folders (defaults to `false`).
+- `.attach_to_process_env(bool)`: Optional method to attach fetched secrets to the current process's environment variables (defaults to `false`).
 
 #### Update Secret
 
-Update an existing secret's name and/or value.
+Update an existing secret.
 
 **Example**
+
 ```rust
-let updated_secret = client
-    .secrets()
-    .update(UpdateSecretOptions {
-        secret_name: "API_KEY".to_string(),
-        environment: "dev".to_string(),
-        project_id: "<your-project-id>".to_string(),
-        new_secret_name: Some("NEW_API_KEY".to_string()),
-        path: None,
-        secret_value: "new-secret-value".to_string(),
-        skip_multiline_encoding: None,
-        r#type: None,
-    })
-    .await?;
+use infisical::resources::secrets::UpdateSecretRequest;
+
+let request = UpdateSecretRequest::builder("API_KEY", "<your-project-id>", "dev")
+    .secret_value("new-secret-value") // Set the new value
+    .build();
+
+let updated_secret = client.secrets().update(request).await?;
 ```
 
 **Parameters**
-* `options` (object):
-  * `secret_name` (string): The current name of the secret to update.
-  * `environment` (string): The environment name.
-  * `project_id` (string): The ID of your project.
-  * `new_secret_name` (Option<string>): The new name for the secret (optional).
-  * `path` (Option<string>): The path where the secret is stored.
-  * `secret_value` (string): The new value for the secret.
-  * `skip_multiline_encoding` (Option<bool>): Whether to skip multiline encoding.
-  * `r#type` (Option<string>): The type of the secret. `(shared|personal)`, defaults to `shared`.
+
+- `secret_name`, `project_id`, `environment`: Required parameters passed to the `builder()` function.
+- `.new_secret_name(name)`: Optional method to rename the secret.
+- `.secret_value(value)`: Optional method to set a new value for the secret.
+- `.path(path)`: Optional method to set the secret's path.
+- `.secret_comment(comment)`: Optional method to add or change the comment.
+- `.skip_multiline_encoding(bool)`: Optional method to control multiline encoding.
+- `.r#type(type)`: Optional method to set the secret type (`shared` or `personal`).
 
 #### Delete Secret
 
 Delete a secret from your project.
 
 **Example**
+
 ```rust
-let deleted_secret = client
-    .secrets()
-    .delete(DeleteSecretOptions {
-        path: None,
-        r#type: None,
-        secret_name: "API_KEY".to_string(),
-        environment: "dev".to_string(),
-        project_id: "<your-project-id>".to_string(),
-    })
-    .await?;
+use infisical::resources::secrets::DeleteSecretRequest;
+
+let request = DeleteSecretRequest::builder("API_KEY", "<your-project-id>", "dev")
+    .path("/")
+    .build();
+
+let deleted_secret = client.secrets().delete(request).await?;
 ```
 
 **Parameters**
-* `options` (object):
-  * `path` (Option<string>): The path where the secret is stored.
-  * `r#type` (Option<string>): The type of the secret. `(shared|personal)`, defaults to `shared`.
-  * `secret_name` (string): The name of the secret to delete.
-  * `environment` (string): The environment name.
-  * `project_id` (string): The ID of your project.
+
+- `secret_name`, `project_id`, `environment`: Required parameters passed to the `builder()` function.
+- `.path(path)`: Optional method to set the secret's path (defaults to `/`).
+- `.r#type(type)`: Optional method to set the secret type (`shared` or `personal`), defaults to `shared`.

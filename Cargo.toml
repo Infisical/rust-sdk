@@ -2,25 +2,23 @@
 name = "infisical"
 version = "0.0.1"
 edition = "2021"
-authors = ["Daniel H. <daniel@infisical.com>"]
-description = "Official Rust-based library to programmatically interact with the Infisical API. The library is fully asynchronous and supports authentication and secrets management."
+authors = ["Daniel H. <daniel@infisical.com>", "Andrey L. <andrey@infisical.com>"]
+description = "Official Rust SDK for Infisical"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/infisical/rust-sdk"
-keywords = ["Infisical", "Secrets", "SDK", "Rust"]
-
-[package.metadata.docs.rs]
-all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
+keywords = ["infisical", "secrets", "sdk", "api"]
+categories = ["api-bindings"]
+homepage = "https://infisical.com"
+include = ["**/*.rs", "Cargo.toml"]
 
 [dependencies]
-serde = { version = "1.0.182", features = ["derive"] }
-serde_json = "1.0.140"
-reqwest = { version = "0.12.22", features = [
-  "json",
-  "rustls-tls-manual-roots",
-] }
-tokio = { version = "1.46.1", features = ["full"] }
-thiserror = "1.0"
-rustls-platform-verifier = "0.1.0"
-rand = "0.9.1"
+reqwest = { version = "0.12", features = ['json', 'blocking', 'rustls-tls'] }
+tokio = { version = "1.46", features = ["full"] }
+serde = { version = "1", features = ['derive'] }
+serde_json = "1"
+thiserror = "1"
+url = "2.5"
+
+[dev-dependencies]
+dotenvy = "0.15"

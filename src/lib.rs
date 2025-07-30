@@ -13,3 +13,8 @@ mod tests;
 
 pub use auth::AuthMethod;
 pub use client::Client;
+pub use resources::kms::{
+    decode_b64, encode_b64, CreateKmsKeyRequest, DecryptRequest, DeleteKmsKeyRequest,
+    EncryptRequest, GetKmsKeyByNameRequest, GetKmsKeyRequest, KmsKey, ListKmsKeysRequest,
+    SignRequest, UpdateKmsKeyRequest, VerifyRequest,
+};

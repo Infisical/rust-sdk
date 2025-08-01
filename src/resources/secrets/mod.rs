@@ -8,12 +8,12 @@ mod update;
 
 use std::collections::HashSet;
 
-pub use create::CreateSecretRequest;
-pub use delete::DeleteSecretRequest;
-pub use get::GetSecretRequest;
-pub use list::ListSecretsRequest;
-pub use types::Secret;
-pub use update::UpdateSecretRequest;
+pub use create::*;
+pub use delete::*;
+pub use get::*;
+pub use list::*;
+pub use types::*;
+pub use update::*;
 
 use crate::{
     client::Client,

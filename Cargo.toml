@@ -1,6 +1,6 @@
 [package]
 name = "infisical"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
 authors = ["Daniel H. <daniel@infisical.com>", "Andrey L. <andrey@infisical.com>"]
 description = "Official Rust SDK for Infisical"

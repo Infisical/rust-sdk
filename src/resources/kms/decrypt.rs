@@ -47,4 +47,4 @@ where
             ciphertext: self.ciphertext.into(),
         }
     }
-} 
+}

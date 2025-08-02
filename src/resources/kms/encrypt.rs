@@ -47,4 +47,4 @@ where
             plaintext: self.plaintext.into(),
         }
     }
-} 
+}

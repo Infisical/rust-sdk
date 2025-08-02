@@ -224,7 +224,7 @@ async fn test_update_secret() {
 #[cfg(test)]
 mod tests {
     use crate::{
-        decode_b64, encode_b64, AuthMethod, Client, CreateKmsKeyRequest, DecryptRequest,
+        decode_base64, encode_base64, AuthMethod, Client, CreateKmsKeyRequest, DecryptRequest,
         EncryptRequest, GetKmsKeyRequest, ListKmsKeysRequest, SignRequest, UpdateKmsKeyRequest,
         VerifyRequest,
     };
@@ -288,10 +288,10 @@ mod tests {
         assert!(!updated_key.id.is_empty());
 
         let original_data = "sensitive data";
-        let encoded_data = encode_b64(original_data);
+        let encoded_data = encode_base64(original_data);
 
-        // Example: decode_b64
-        let decoded_data = decode_b64(&encoded_data).unwrap();
+        // Example: decode_base64
+        let decoded_data = decode_base64(&encoded_data).unwrap();
         assert_eq!(decoded_data, original_data);
 
         // Example: Encrypt data
@@ -302,7 +302,7 @@ mod tests {
         let decrypt_request = DecryptRequest::builder(&key.id, &ciphertext).build();
         let plaintext = client.kms().decrypt(decrypt_request).await.unwrap();
 
-        let decoded_plaintext = decode_b64(&plaintext).unwrap();
+        let decoded_plaintext = decode_base64(&plaintext).unwrap();
         assert_eq!(decoded_plaintext, original_data);
 
         // Create a signing key
@@ -317,7 +317,7 @@ mod tests {
         println!("Created signing key with ID: {}", signing_key.id);
 
         // Example: Sign data
-        let sign_request = SignRequest::builder(&signing_key.id, encode_b64("data to sign"))
+        let sign_request = SignRequest::builder(&signing_key.id, encode_base64("data to sign"))
             .signing_algorithm("RSASSA_PKCS1_V1_5_SHA_256")
             .is_digest(false)
             .build();
@@ -326,7 +326,7 @@ mod tests {
         // Example: Verify signature
         let verify_request = VerifyRequest::builder(
             &signing_key.id,
-            encode_b64("data to sign"),
+            encode_base64("data to sign"),
             &signature.signature,
         )
         .signing_algorithm("RSASSA_PKCS1_V1_5_SHA_256")

@@ -13,7 +13,7 @@ cargo add infisical
 The easiest way to get started is to use the builder pattern for both the client and your requests.
 
 ```rust
-use infisical::{Client, AuthMethod, encode_b64, decode_b64};
+use infisical::{Client, AuthMethod, encode_base64, decode_base64};
 use infisical::resources::secrets::GetSecretRequest;
 use std::error::Error;
 
@@ -73,20 +73,20 @@ The SDK methods are organized into the following high-level categories:
 The SDK provides utility functions for common operations:
 
 ```rust
-use infisical::{encode_b64, decode_b64};
+use infisical::{encode_base64, decode_base64};
 
 // Base64 encode a string
-let encoded = encode_b64("sensitive data");
+let encoded = encode_base64("sensitive data");
 println!("Encoded: {}", encoded);
 
 // Base64 decode a string
-let decoded = decode_b64(&encoded)?;
+let decoded = decode_base64(&encoded)?;
 println!("Decoded: {}", decoded);
 ```
 
 **Available Functions**
-- `encode_b64(data: &str) -> String`: Encodes a string as base64
-- `decode_b64(data: &str) -> Result<String, Box<dyn std::error::Error>>`: Decodes a base64 string
+- `encode_base64(data: &str) -> String`: Encodes a string as base64
+- `decode_base64(data: &str) -> Result<String, Box<dyn std::error::Error>>`: Decodes a base64 string
 
 ### `secrets`
 

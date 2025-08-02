@@ -15,7 +15,7 @@ pub use decrypt::DecryptRequest;
 pub use delete::DeleteKmsKeyRequest;
 pub use encrypt::EncryptRequest;
 pub use get::{GetKmsKeyByNameRequest, GetKmsKeyRequest};
-pub use helper::{decode_b64, encode_b64};
+pub use helper::{decode_base64, encode_base64};
 pub use list::ListKmsKeysRequest;
 pub use sign::SignRequest;
 pub use types::{

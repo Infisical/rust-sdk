@@ -21,4 +21,5 @@ pub mod kms {
 
 pub use auth::AuthMethod;
 pub use client::Client;
+pub use error::InfisicalError;
 pub use resources::kms::{decode_base64, encode_base64};

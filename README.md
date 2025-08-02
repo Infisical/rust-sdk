@@ -13,11 +13,10 @@ cargo add infisical
 The easiest way to get started is to use the builder pattern for both the client and your requests.
 
 ```rust
-use infisical::{Client, AuthMethod, encode_base64, decode_base64};
+use infisical::{AuthMethod, Client, InfisicalError, encode_base64, decode_base64};
 use infisical::secrets::GetSecretRequest;
-use std::error::Error;
 
-async fn fetch_secret() -> Result<(), Box<dyn Error>> {
+async fn fetch_secret() -> Result<(), InfisicalError> {
     // 1. Build the client. You can chain methods to configure it.
     let mut client = Client::builder()
         .base_url("https://app.infisical.com") // Optional: defaults to https://app.infisical.com
@@ -57,7 +56,7 @@ let mut client = Client::builder()
 ```
 
 **Parameters**
-- `.base_url(url)`: Optional method to set the Infisical instance URL. Defaults to `https://app.infisical.com` for Infisical Cloud. Use `http://localhost:8080` for local development.
+- `.base_url(url)`: Optional method to set the Infisical instance URL. Defaults to `https://app.infisical.com` for Infisical Cloud. Use `https://eu.infisical.com` for EU and `http://localhost:8080` for local development.
 
 ### Core Methods
 
@@ -86,7 +85,7 @@ println!("Decoded: {}", decoded);
 
 **Available Functions**
 - `encode_base64(data: &str) -> String`: Encodes a string as base64
-- `decode_base64(data: &str) -> Result<String, Box<dyn std::error::Error>>`: Decodes a base64 string
+- `decode_base64(data: &str) -> Result<String, InfisicalError>`: Decodes a base64 string
 
 ### `secrets`
 

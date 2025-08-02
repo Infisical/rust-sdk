@@ -192,19 +192,56 @@ impl<'a> SecretsClient<'a> {
             self.client.base_url, request.secret_name
         );
 
-        let body = serde_json::json!({
-            "workspaceId": request.project_id,
-            "environment": request.environment,
-            "newSecretName": request.new_secret_name,
-            "secretValue": request.secret_value,
-            "secretPath": request.path.as_deref().unwrap_or("/"),
-            "type": request.r#type.as_deref().unwrap_or("shared"),
-            "secretComment": request.secret_comment.as_deref().unwrap_or(""),
-            "skipMultilineEncoding": request.skip_multiline_encoding.unwrap_or(false),
-        });
+        let mut body = serde_json::Map::new();
+
+        // Required fields
+        body.insert(
+            "workspaceId".to_string(),
+            serde_json::Value::String(request.project_id),
+        );
+        body.insert(
+            "environment".to_string(),
+            serde_json::Value::String(request.environment),
+        );
+
+        // Optional fields
+        if let Some(new_secret_name) = request.new_secret_name {
+            body.insert(
+                "newSecretName".to_string(),
+                serde_json::Value::String(new_secret_name),
+            );
+        }
+        if let Some(secret_value) = request.secret_value {
+            body.insert(
+                "secretValue".to_string(),
+                serde_json::Value::String(secret_value),
+            );
+        }
+        if let Some(path) = request.path {
+            body.insert("secretPath".to_string(), serde_json::Value::String(path));
+        }
+        if let Some(r#type) = request.r#type {
+            body.insert("type".to_string(), serde_json::Value::String(r#type));
+        }
+        if let Some(secret_comment) = request.secret_comment {
+            body.insert(
+                "secretComment".to_string(),
+                serde_json::Value::String(secret_comment),
+            );
+        }
+        if let Some(skip_multiline_encoding) = request.skip_multiline_encoding {
+            body.insert(
+                "skipMultilineEncoding".to_string(),
+                serde_json::Value::Bool(skip_multiline_encoding),
+            );
+        }
 
         let response: SecretResponse<Secret> = self
-            .request_with_body(reqwest::Method::PATCH, base_url, &body)
+            .request_with_body(
+                reqwest::Method::PATCH,
+                base_url,
+                &serde_json::Value::Object(body),
+            )
             .await?;
         Ok(response.secret)
     }

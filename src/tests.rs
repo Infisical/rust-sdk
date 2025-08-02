@@ -226,8 +226,9 @@ mod tests {
     use crate::{
         decode_base64, encode_base64,
         kms::{
-            CreateKmsKeyRequest, DecryptRequest, EncryptRequest, GetKmsKeyRequest,
-            ListKmsKeysRequest, SignRequest, UpdateKmsKeyRequest, VerifyRequest,
+            CreateKmsKeyRequest, DecryptRequest, EncryptRequest, EncryptionAlgorithm,
+            GetKmsKeyRequest, KeyUsage, ListKmsKeysRequest, SignRequest, SigningAlgorithm,
+            UpdateKmsKeyRequest, VerifyRequest,
         },
         AuthMethod, Client,
     };
@@ -266,8 +267,8 @@ mod tests {
         // Example: Create a new KMS key for encryption
         let create_request = CreateKmsKeyRequest::builder(&project_id, "test-encryption-key")
             .description("A test key for encryption")
-            .key_usage("encrypt-decrypt")
-            .encryption_algorithm("aes-256-gcm")
+            .key_usage(KeyUsage::EncryptDecrypt)
+            .encryption_algorithm(EncryptionAlgorithm::Aes256Gcm)
             .build();
         let key = client.kms().create(create_request).await.unwrap();
 
@@ -311,8 +312,8 @@ mod tests {
         // Create a signing key
         let create_signing_request = CreateKmsKeyRequest::builder(&project_id, "test-signing-key")
             .description("A test key for signing")
-            .key_usage("sign-verify")
-            .encryption_algorithm("RSA_4096")
+            .key_usage(KeyUsage::SignVerify)
+            .encryption_algorithm(EncryptionAlgorithm::Rsa4096)
             .build();
         let signing_key = client.kms().create(create_signing_request).await.unwrap();
 
@@ -321,7 +322,7 @@ mod tests {
 
         // Example: Sign data
         let sign_request = SignRequest::builder(&signing_key.id, encode_base64("data to sign"))
-            .signing_algorithm("RSASSA_PKCS1_V1_5_SHA_256")
+            .signing_algorithm(SigningAlgorithm::RsassaPkcs1V15Sha256)
             .is_digest(false)
             .build();
         let signature = client.kms().sign(sign_request).await.unwrap();
@@ -332,7 +333,7 @@ mod tests {
             encode_base64("data to sign"),
             &signature.signature,
         )
-        .signing_algorithm("RSASSA_PKCS1_V1_5_SHA_256")
+        .signing_algorithm(SigningAlgorithm::RsassaPkcs1V15Sha256)
         .is_digest(false)
         .build();
         let verification = client.kms().verify(verify_request).await.unwrap();

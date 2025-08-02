@@ -1,3 +1,5 @@
+use crate::kms::{EncryptionAlgorithm, KeyUsage};
+
 /// Represents the parameters for a create KMS key request.
 ///
 /// Use the [CreateKmsKeyRequest::builder()] to construct this struct.
@@ -32,8 +34,8 @@ pub struct CreateKmsKeyBuilder<PID, N> {
     project_id: PID,
     name: N,
     description: Option<String>,
-    key_usage: Option<String>,
-    encryption_algorithm: Option<String>,
+    key_usage: Option<KeyUsage>,
+    encryption_algorithm: Option<EncryptionAlgorithm>,
 }
 
 impl<PID, N> CreateKmsKeyBuilder<PID, N>
@@ -61,15 +63,15 @@ where
 
     /// Sets the key usage. Defaults to `"encrypt-decrypt"`.
     #[must_use]
-    pub fn key_usage<S: Into<String>>(mut self, key_usage: S) -> Self {
-        self.key_usage = Some(key_usage.into());
+    pub fn key_usage(mut self, key_usage: KeyUsage) -> Self {
+        self.key_usage = Some(key_usage);
         self
     }
 
     /// Sets the encryption algorithm. Defaults to `"aes-256-gcm"`.
     #[must_use]
-    pub fn encryption_algorithm<S: Into<String>>(mut self, encryption_algorithm: S) -> Self {
-        self.encryption_algorithm = Some(encryption_algorithm.into());
+    pub fn encryption_algorithm(mut self, encryption_algorithm: EncryptionAlgorithm) -> Self {
+        self.encryption_algorithm = Some(encryption_algorithm);
         self
     }
 
@@ -79,8 +81,8 @@ where
             project_id: self.project_id.into(),
             name: self.name.into(),
             description: self.description,
-            key_usage: self.key_usage,
-            encryption_algorithm: self.encryption_algorithm,
+            key_usage: self.key_usage.map(|e| e.to_string()),
+            encryption_algorithm: self.encryption_algorithm.map(|e| e.to_string()),
         }
     }
-} 
+}

@@ -1,3 +1,5 @@
+use crate::kms::SigningAlgorithm;
+
 /// Represents the parameters for a verify request.
 ///
 /// Use the [VerifyRequest::builder()] to construct this struct.
@@ -35,7 +37,7 @@ pub struct VerifyBuilder<KID, D, S> {
     data: D,
     signature: S,
     is_digest: Option<bool>,
-    signing_algorithm: Option<String>,
+    signing_algorithm: Option<SigningAlgorithm>,
 }
 
 impl<KID, D, S> VerifyBuilder<KID, D, S>
@@ -62,10 +64,10 @@ where
         self
     }
 
-    /// Sets the signing algorithm. Defaults to `"RSASSA_PSS_SHA_512"`.
+    /// Sets the signing algorithm. Defaults to `"RSASSA_PKCS1_V1_5_SHA_256"`.
     #[must_use]
-    pub fn signing_algorithm<SA: Into<String>>(mut self, signing_algorithm: SA) -> Self {
-        self.signing_algorithm = Some(signing_algorithm.into());
+    pub fn signing_algorithm(mut self, signing_algorithm: SigningAlgorithm) -> Self {
+        self.signing_algorithm = Some(signing_algorithm);
         self
     }
 
@@ -76,7 +78,7 @@ where
             data: self.data.into(),
             signature: self.signature.into(),
             is_digest: self.is_digest,
-            signing_algorithm: self.signing_algorithm,
+            signing_algorithm: self.signing_algorithm.map(|e| e.to_string()),
         }
     }
-} 
+}

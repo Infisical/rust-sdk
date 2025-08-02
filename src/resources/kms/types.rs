@@ -1,5 +1,98 @@
 use serde::{Deserialize, Serialize};
 
+/// Represents the supported key usage types for KMS keys.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum KeyUsage {
+    /// For encryption and decryption operations.
+    EncryptDecrypt,
+    /// For signing and verification operations.
+    SignVerify,
+}
+
+impl ::std::fmt::Display for KeyUsage {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::EncryptDecrypt => "encrypt-decrypt",
+                Self::SignVerify => "sign-verify",
+            }
+        )
+    }
+}
+
+/// Represents the supported encryption algorithms for KMS keys.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EncryptionAlgorithm {
+    /// AES-256-GCM, for use with KeyUsage::EncryptDecrypt.
+    Aes256Gcm,
+    /// AES-128-GCM, for use with KeyUsage::EncryptDecrypt.
+    Aes128Gcm,
+    /// RSA with a 4096-bit key, for use with KeyUsage::SignVerify.
+    Rsa4096,
+    /// Elliptic Curve Cryptography using the NIST P-256 curve, for use with KeyUsage::SignVerify.
+    EccNistP256,
+}
+
+impl ::std::fmt::Display for EncryptionAlgorithm {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Aes256Gcm => "aes-256-gcm",
+                Self::Aes128Gcm => "aes-128-gcm",
+                Self::Rsa4096 => "RSA_4096",
+                Self::EccNistP256 => "ECC_NIST_P256",
+            }
+        )
+    }
+}
+
+/// Represents the supported signing algorithms for KMS keys.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SigningAlgorithm {
+    /// RSASSA-PSS with SHA-512.
+    RsassaPssSha512,
+    /// RSASSA-PSS with SHA-384.
+    RsassaPssSha384,
+    /// RSASSA-PSS with SHA-256.
+    RsassaPssSha256,
+    /// RSASSA-PKCS1-v1.5 with SHA-512.
+    RsassaPkcs1V15Sha512,
+    /// RSASSA-PKCS1-v1.5 with SHA-384.
+    RsassaPkcs1V15Sha384,
+    /// RSASSA-PKCS1-v1.5 with SHA-256.
+    RsassaPkcs1V15Sha256,
+    /// ECDSA with SHA-512.
+    EcdsaSha512,
+    /// ECDSA with SHA-384.
+    EcdsaSha384,
+    /// ECDSA with SHA-256.
+    EcdsaSha256,
+}
+
+impl ::std::fmt::Display for SigningAlgorithm {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::RsassaPssSha512 => "RSASSA_PSS_SHA_512",
+                Self::RsassaPssSha384 => "RSASSA_PSS_SHA_384",
+                Self::RsassaPssSha256 => "RSASSA_PSS_SHA_256",
+                Self::RsassaPkcs1V15Sha512 => "RSASSA_PKCS1_V1_5_SHA_512",
+                Self::RsassaPkcs1V15Sha384 => "RSASSA_PKCS1_V1_5_SHA_384",
+                Self::RsassaPkcs1V15Sha256 => "RSASSA_PKCS1_V1_5_SHA_256",
+                Self::EcdsaSha512 => "ECDSA_SHA_512",
+                Self::EcdsaSha384 => "ECDSA_SHA_384",
+                Self::EcdsaSha256 => "ECDSA_SHA_256",
+            }
+        )
+    }
+}
+
 /// Represents a KMS key from the Infisical API.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -73,4 +166,4 @@ pub struct PublicKeyResponse {
 #[serde(rename_all = "camelCase")]
 pub struct SigningAlgorithmsResponse {
     pub signing_algorithms: Vec<String>,
-} 
+}

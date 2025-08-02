@@ -282,12 +282,12 @@ Create a new KMS key in your project.
 **Example**
 
 ```rust
-use infisical::kms::CreateKmsKeyRequest;
+use infisical::kms::{CreateKmsKeyRequest, EncryptionAlgorithm, KeyUsage};
 
 let request = CreateKmsKeyRequest::builder("<your-project-id>", "my-key")
     .description("A key for encryption operations")
-    .key_usage("encrypt-decrypt")
-    .encryption_algorithm("aes-256-gcm")
+    .key_usage(KeyUsage::EncryptDecrypt)
+    .encryption_algorithm(EncryptionAlgorithm::Aes256Gcm)
     .build();
 
 let created_key = client.kms().create(request).await?;
@@ -297,8 +297,8 @@ let created_key = client.kms().create(request).await?;
 
 - `project_id`, `name`: Required parameters passed to the `builder()` function.
 - `.description(description)`: Optional method to set the key description.
-- `.key_usage(usage)`: Optional method to set the key usage (defaults to `"encrypt-decrypt"`).
-- `.encryption_algorithm(algorithm)`: Optional method to set the encryption algorithm (defaults to `"aes-256-gcm"`).
+- `.key_usage(usage)`: Optional method to set the key usage using the `KeyUsage` enum (defaults to `KeyUsage::EncryptDecrypt`).
+- `.encryption_algorithm(algorithm)`: Optional method to set the encryption algorithm using the `EncryptionAlgorithm` enum (defaults to `EncryptionAlgorithm::Aes256Gcm`).
 
 #### Update KMS Key
 
@@ -386,10 +386,10 @@ Sign data using a KMS key.
 **Example**
 
 ```rust
-use infisical::kms::SignRequest;
+use infisical::kms::{SigningAlgorithm, SignRequest};
 
 let request = SignRequest::builder("<key-id>", "data to sign")
-    .signing_algorithm("RSASSA_PSS_SHA_512")
+    .signing_algorithm(SigningAlgorithm::RsassaPkcs1V15Sha256)
     .is_digest(false)
     .build();
 
@@ -399,7 +399,7 @@ let signature = client.kms().sign(request).await?;
 **Parameters**
 
 - `key_id`, `data`: Required parameters passed to the `builder()` function.
-- `.signing_algorithm(algorithm)`: Optional method to set the signing algorithm (defaults to `"RSASSA_PSS_SHA_512"`).
+- `.signing_algorithm(algorithm)`: Optional method to set the signing algorithm using the `SigningAlgorithm` enum (defaults to `SigningAlgorithm::RsassaPkcs1V15Sha256`).
 - `.is_digest(is_digest)`: Optional method to indicate if the data is a digest (defaults to `false`).
 
 #### Verify Signature
@@ -409,10 +409,10 @@ Verify a signature using a KMS key.
 **Example**
 
 ```rust
-use infisical::kms::VerifyRequest;
+use infisical::kms::{SigningAlgorithm, VerifyRequest};
 
 let request = VerifyRequest::builder("<key-id>", "data to sign", "signature")
-    .signing_algorithm("RSASSA_PSS_SHA_512")
+    .signing_algorithm(SigningAlgorithm::RsassaPkcs1V15Sha256)
     .is_digest(false)
     .build();
 
@@ -422,7 +422,7 @@ let verification = client.kms().verify(request).await?;
 **Parameters**
 
 - `key_id`, `data`, `signature`: Required parameters passed to the `builder()` function.
-- `.signing_algorithm(algorithm)`: Optional method to set the signing algorithm (defaults to `"RSASSA_PSS_SHA_512"`).
+- `.signing_algorithm(algorithm)`: Optional method to set the signing algorithm using the `SigningAlgorithm` enum (defaults to `SigningAlgorithm::RsassaPkcs1V15Sha256`).
 - `.is_digest(is_digest)`: Optional method to indicate if the data is a digest (defaults to `false`).
 
 #### Get Public Key

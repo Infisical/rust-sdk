@@ -1,3 +1,5 @@
+use crate::kms::SigningAlgorithm;
+
 /// Represents the parameters for a sign request.
 ///
 /// Use the [SignRequest::builder()] to construct this struct.
@@ -30,7 +32,7 @@ impl SignRequest {
 pub struct SignBuilder<KID, D> {
     key_id: KID,
     data: D,
-    signing_algorithm: Option<String>,
+    signing_algorithm: Option<SigningAlgorithm>,
     is_digest: Option<bool>,
 }
 
@@ -49,10 +51,10 @@ where
         }
     }
 
-    /// Sets the signing algorithm. Defaults to `"RSASSA_PSS_SHA_512"`.
+    /// Sets the signing algorithm. Defaults to `"RSASSA_PKCS1_V1_5_SHA_256"`.
     #[must_use]
-    pub fn signing_algorithm<S: Into<String>>(mut self, signing_algorithm: S) -> Self {
-        self.signing_algorithm = Some(signing_algorithm.into());
+    pub fn signing_algorithm(mut self, signing_algorithm: SigningAlgorithm) -> Self {
+        self.signing_algorithm = Some(signing_algorithm);
         self
     }
 
@@ -68,8 +70,8 @@ where
         SignRequest {
             key_id: self.key_id.into(),
             data: self.data.into(),
-            signing_algorithm: self.signing_algorithm,
+            signing_algorithm: self.signing_algorithm.map(|e| e.to_string()),
             is_digest: self.is_digest,
         }
     }
-} 
+}

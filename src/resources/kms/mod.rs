@@ -236,7 +236,7 @@ impl<'a> KmsClient<'a> {
         );
 
         let body = serde_json::json!({
-            "signingAlgorithm": request.signing_algorithm.as_deref().unwrap_or("RSASSA_PSS_SHA_512"),
+            "signingAlgorithm": request.signing_algorithm.as_deref().unwrap_or("RSASSA_PKCS1_V1_5_SHA_256"),
             "isDigest": request.is_digest.unwrap_or(false),
             "data": request.data,
         });
@@ -258,7 +258,7 @@ impl<'a> KmsClient<'a> {
             "isDigest": request.is_digest.unwrap_or(false),
             "data": request.data,
             "signature": request.signature,
-            "signingAlgorithm": request.signing_algorithm.as_deref().unwrap_or("RSASSA_PSS_SHA_512"),
+            "signingAlgorithm": request.signing_algorithm.as_deref().unwrap_or("RSASSA_PKCS1_V1_5_SHA_256"),
         });
 
         let response: VerifyResponse = self

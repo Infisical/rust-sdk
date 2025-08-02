@@ -465,7 +465,7 @@ INFISICAL_CLIENT_SECRET=your_client_secret_here
 INFISICAL_BASE_URL=http://localhost:8080  # Optional: for local development
 
 # Project IDs for different resources
-INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID=your_project_id_here
+INFISICAL_SECRETS_PROJECT_ID=your_project_id_here
 INFISICAL_KMS_PROJECT_ID=your_project_id_here
 ```
 

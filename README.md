@@ -13,13 +13,13 @@ cargo add infisical
 The easiest way to get started is to use the builder pattern for both the client and your requests.
 
 ```rust
-use infisical::{Client, AuthMethod};
-use infisical::resources::secrets::GetSecretRequest;
-use std::error::Error;
+use infisical::{AuthMethod, Client, InfisicalError, encode_base64, decode_base64};
+use infisical::secrets::GetSecretRequest;
 
-async fn fetch_secret() -> Result<(), Box<dyn Error>> {
+async fn fetch_secret() -> Result<(), InfisicalError> {
     // 1. Build the client. You can chain methods to configure it.
     let mut client = Client::builder()
+        .base_url("https://app.infisical.com") // Optional: defaults to https://app.infisical.com
         .build()
         .await?;
 
@@ -44,6 +44,20 @@ async fn fetch_secret() -> Result<(), Box<dyn Error>> {
 }
 ```
 
+### Client Configuration
+
+The `Client::builder()` provides several configuration options:
+
+```rust
+let mut client = Client::builder()
+    .base_url("https://app.infisical.com") // Optional: set custom Infisical instance URL
+    .build()
+    .await?;
+```
+
+**Parameters**
+- `.base_url(url)`: Optional method to set the Infisical instance URL. Defaults to `https://app.infisical.com` for Infisical Cloud. Use `https://eu.infisical.com` for EU and `http://localhost:8080` for local development.
+
 ### Core Methods
 
 The SDK methods are organized into the following high-level categories:
@@ -51,6 +65,27 @@ The SDK methods are organized into the following high-level categories:
 - `Client::builder()`: The main entry point for creating a client.
 - `client.login()`: Allows client to make authenticated requests to the API.
 - `client.secrets()`: Provides access to all CRUD operations for secrets.
+- `client.kms()`: Provides access to all KMS (Key Management Service) operations.
+
+### Helper Functions
+
+The SDK provides utility functions for common operations:
+
+```rust
+use infisical::{encode_base64, decode_base64};
+
+// Base64 encode a string
+let encoded = encode_base64("sensitive data");
+println!("Encoded: {}", encoded);
+
+// Base64 decode a string
+let decoded = decode_base64(&encoded)?;
+println!("Decoded: {}", decoded);
+```
+
+**Available Functions**
+- `encode_base64(data: &str) -> String`: Encodes a string as base64
+- `decode_base64(data: &str) -> Result<String, InfisicalError>`: Decodes a base64 string
 
 ### `secrets`
 
@@ -63,7 +98,7 @@ Create a new secret in your project.
 **Example**
 
 ```rust
-use infisical::resources::secrets::CreateSecretRequest;
+use infisical::secrets::CreateSecretRequest;
 
 let request = CreateSecretRequest::builder(
     "API_KEY",
@@ -93,7 +128,7 @@ Retrieve a specific secret by name.
 **Example**
 
 ```rust
-use infisical::resources::secrets::GetSecretRequest;
+use infisical::secrets::GetSecretRequest;
 
 let request = GetSecretRequest::builder("API_KEY", "<your-project-id>", "dev")
     .path("/")
@@ -116,7 +151,7 @@ List all secrets in a project and environment.
 **Example**
 
 ```rust
-use infisical::resources::secrets::ListSecretsRequest;
+use infisical::secrets::ListSecretsRequest;
 
 let request = ListSecretsRequest::builder("<your-project-id>", "dev")
     .path("/")
@@ -141,7 +176,7 @@ Update an existing secret.
 **Example**
 
 ```rust
-use infisical::resources::secrets::UpdateSecretRequest;
+use infisical::secrets::UpdateSecretRequest;
 
 let request = UpdateSecretRequest::builder("API_KEY", "<your-project-id>", "dev")
     .secret_value("new-secret-value") // Set the new value
@@ -167,7 +202,7 @@ Delete a secret from your project.
 **Example**
 
 ```rust
-use infisical::resources::secrets::DeleteSecretRequest;
+use infisical::secrets::DeleteSecretRequest;
 
 let request = DeleteSecretRequest::builder("API_KEY", "<your-project-id>", "dev")
     .path("/")
@@ -181,3 +216,276 @@ let deleted_secret = client.secrets().delete(request).await?;
 - `secret_name`, `project_id`, `environment`: Required parameters passed to the `builder()` function.
 - `.path(path)`: Optional method to set the secret's path (defaults to `/`).
 - `.r#type(type)`: Optional method to set the secret type (`shared` or `personal`), defaults to `shared`.
+
+### `kms`
+
+All KMS (Key Management Service) operations are accessed via `client.kms()`. Each operation has a dedicated request builder.
+
+#### List KMS Keys
+
+List all KMS keys in a project.
+
+**Example**
+
+```rust
+use infisical::kms::ListKmsKeysRequest;
+
+let request = ListKmsKeysRequest::builder("<your-project-id>").build();
+
+let keys = client.kms().list(request).await?;
+```
+
+**Parameters**
+
+- `project_id`: Required parameter passed to the `builder()` function.
+
+#### Get KMS Key
+
+Retrieve a specific KMS key by ID.
+
+**Example**
+
+```rust
+use infisical::kms::GetKmsKeyRequest;
+
+let request = GetKmsKeyRequest::builder("<key-id>").build();
+
+let key = client.kms().get(request).await?;
+```
+
+**Parameters**
+
+- `key_id`: Required parameter passed to the `builder()` function.
+
+#### Get KMS Key by Name
+
+Retrieve a specific KMS key by name.
+
+**Example**
+
+```rust
+use infisical::kms::GetKmsKeyByNameRequest;
+
+let request = GetKmsKeyByNameRequest::builder("<key-name>").build();
+
+let key = client.kms().get_by_name(request).await?;
+```
+
+**Parameters**
+
+- `key_name`: Required parameter passed to the `builder()` function.
+
+#### Create KMS Key
+
+Create a new KMS key in your project.
+
+**Example**
+
+```rust
+use infisical::kms::{CreateKmsKeyRequest, EncryptionAlgorithm, KeyUsage};
+
+let request = CreateKmsKeyRequest::builder("<your-project-id>", "my-key")
+    .description("A key for encryption operations")
+    .key_usage(KeyUsage::EncryptDecrypt)
+    .encryption_algorithm(EncryptionAlgorithm::Aes256Gcm)
+    .build();
+
+let created_key = client.kms().create(request).await?;
+```
+
+**Parameters**
+
+- `project_id`, `name`: Required parameters passed to the `builder()` function.
+- `.description(description)`: Optional method to set the key description.
+- `.key_usage(usage)`: Optional method to set the key usage using the `KeyUsage` enum (defaults to `KeyUsage::EncryptDecrypt`).
+- `.encryption_algorithm(algorithm)`: Optional method to set the encryption algorithm using the `EncryptionAlgorithm` enum (defaults to `EncryptionAlgorithm::Aes256Gcm`).
+
+#### Update KMS Key
+
+Update an existing KMS key.
+
+**Example**
+
+```rust
+use infisical::kms::UpdateKmsKeyRequest;
+
+let request = UpdateKmsKeyRequest::builder("<key-id>")
+    .name("updated-key-name")
+    .description("Updated description")
+    .is_disabled(false)
+    .build();
+
+let updated_key = client.kms().update(request).await?;
+```
+
+**Parameters**
+
+- `key_id`: Required parameter passed to the `builder()` function.
+- `.name(name)`: Optional method to rename the key.
+- `.description(description)`: Optional method to update the key description.
+- `.is_disabled(disabled)`: Optional method to enable or disable the key.
+
+#### Delete KMS Key
+
+Delete a KMS key from your project.
+
+**Example**
+
+```rust
+use infisical::kms::DeleteKmsKeyRequest;
+
+let request = DeleteKmsKeyRequest::builder("<key-id>").build();
+
+let deleted_key = client.kms().delete(request).await?;
+```
+
+**Parameters**
+
+- `key_id`: Required parameter passed to the `builder()` function.
+
+#### Encrypt Data
+
+Encrypt data using a KMS key.
+
+**Example**
+
+```rust
+use infisical::kms::EncryptRequest;
+
+let request = EncryptRequest::builder("<key-id>", "sensitive data").build();
+
+let ciphertext = client.kms().encrypt(request).await?;
+```
+
+**Parameters**
+
+- `key_id`, `plaintext`: Required parameters passed to the `builder()` function.
+
+#### Decrypt Data
+
+Decrypt data using a KMS key.
+
+**Example**
+
+```rust
+use infisical::kms::DecryptRequest;
+
+let request = DecryptRequest::builder("<key-id>", "encrypted-data").build();
+
+let plaintext = client.kms().decrypt(request).await?;
+```
+
+**Parameters**
+
+- `key_id`, `ciphertext`: Required parameters passed to the `builder()` function.
+
+#### Sign Data
+
+Sign data using a KMS key.
+
+**Example**
+
+```rust
+use infisical::kms::{SigningAlgorithm, SignRequest};
+
+let request = SignRequest::builder("<key-id>", "data to sign")
+    .signing_algorithm(SigningAlgorithm::RsassaPkcs1V15Sha256)
+    .is_digest(false)
+    .build();
+
+let signature = client.kms().sign(request).await?;
+```
+
+**Parameters**
+
+- `key_id`, `data`: Required parameters passed to the `builder()` function.
+- `.signing_algorithm(algorithm)`: Optional method to set the signing algorithm using the `SigningAlgorithm` enum (defaults to `SigningAlgorithm::RsassaPkcs1V15Sha256`).
+- `.is_digest(is_digest)`: Optional method to indicate if the data is a digest (defaults to `false`).
+
+#### Verify Signature
+
+Verify a signature using a KMS key.
+
+**Example**
+
+```rust
+use infisical::kms::{SigningAlgorithm, VerifyRequest};
+
+let request = VerifyRequest::builder("<key-id>", "data to sign", "signature")
+    .signing_algorithm(SigningAlgorithm::RsassaPkcs1V15Sha256)
+    .is_digest(false)
+    .build();
+
+let verification = client.kms().verify(request).await?;
+```
+
+**Parameters**
+
+- `key_id`, `data`, `signature`: Required parameters passed to the `builder()` function.
+- `.signing_algorithm(algorithm)`: Optional method to set the signing algorithm using the `SigningAlgorithm` enum (defaults to `SigningAlgorithm::RsassaPkcs1V15Sha256`).
+- `.is_digest(is_digest)`: Optional method to indicate if the data is a digest (defaults to `false`).
+
+#### Get Public Key
+
+Get the public key for a KMS key.
+
+**Example**
+
+```rust
+let public_key = client.kms().get_public_key("<key-id>").await?;
+```
+
+**Parameters**
+
+- `key_id`: The ID of the key to get the public key for.
+
+#### Get Signing Algorithms
+
+Get the available signing algorithms for a KMS key.
+
+**Example**
+
+```rust
+let algorithms = client.kms().get_signing_algorithms("<key-id>").await?;
+```
+
+**Parameters**
+
+- `key_id`: The ID of the key to get signing algorithms for.
+
+## Development and Testing
+
+### Environment Setup
+
+For development and testing, you'll need to set up environment variables. Create a `.env` file in your project root:
+
+```env
+INFISICAL_CLIENT_ID=your_client_id_here
+INFISICAL_CLIENT_SECRET=your_client_secret_here
+INFISICAL_BASE_URL=http://localhost:8080  # Optional: for local development
+
+# Project IDs for different resources
+INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID=your_project_id_here
+INFISICAL_KMS_PROJECT_ID=your_project_id_here
+```
+
+### Getting Credentials
+
+To obtain the required credentials:
+
+1. **Client ID and Secret**: Create a Universal Auth machine identity in your Infisical project settings
+2. **Project ID**: Found in your project settings or URL when viewing a project in the Infisical dashboard
+
+### Running Tests
+
+Tests that require authentication are marked with `#[ignore]` and need valid credentials:
+
+```bash
+# Run ignored tests (requires .env file with valid credentials)
+cargo test -- --ignored --nocapture
+
+# Run a specific test
+cargo test test_kms_resource -- --ignored --nocapture
+```
+
+**Note**: Integration tests require a running Infisical instance and valid authentication credentials.

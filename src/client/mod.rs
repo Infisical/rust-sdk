@@ -3,7 +3,7 @@ use std::time::Duration;
 use crate::{
     auth::{AuthHelper, AuthMethod},
     error::InfisicalError,
-    resources::secrets::SecretsClient,
+    resources::{kms::KmsClient, secrets::SecretsClient},
 };
 
 /// Infisical Client. Used to interact with the Infisical API.
@@ -160,5 +160,10 @@ impl Client {
     /// Access secrets operations.
     pub fn secrets(&self) -> SecretsClient {
         SecretsClient::new(self)
+    }
+
+    /// Access KMS operations.
+    pub fn kms(&self) -> KmsClient {
+        KmsClient::new(self)
     }
 }

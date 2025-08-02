@@ -1,4 +1,6 @@
+use base64::DecodeError;
 use reqwest::{header::InvalidHeaderValue, StatusCode};
+use std::string::FromUtf8Error;
 use thiserror::Error;
 use url::ParseError;
 
@@ -28,4 +30,12 @@ pub enum InfisicalError {
     /// Attempted to make an authenticated request without logging in first.
     #[error("Client is not authenticated. Please call .login() first.")]
     NotAuthenticated,
+
+    /// Failed to decode base64 data.
+    #[error("Failed to decode base64 data: {0}")]
+    Base64DecodeError(#[from] DecodeError),
+
+    /// Failed to convert bytes to UTF-8 string.
+    #[error("Failed to convert bytes to UTF-8 string: {0}")]
+    FromUtf8Error(#[from] FromUtf8Error),
 }

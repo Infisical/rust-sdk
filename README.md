@@ -485,7 +485,7 @@ Tests that require authentication are marked with `#[ignore]` and need valid cre
 cargo test -- --ignored --nocapture
 
 # Run a specific test
-cargo test test_kms_operations -- --ignored --nocapture
+cargo test test_kms_resource -- --ignored --nocapture
 ```
 
 **Note**: Integration tests require a running Infisical instance and valid authentication credentials.

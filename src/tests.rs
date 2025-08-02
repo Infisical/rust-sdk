@@ -11,7 +11,7 @@
 // cargo test -- --ignored --nocapture
 
 use crate::{
-    resources::secrets::{
+    secrets::{
         CreateSecretRequest, DeleteSecretRequest, GetSecretRequest, ListSecretsRequest,
         UpdateSecretRequest,
     },
@@ -224,9 +224,12 @@ async fn test_update_secret() {
 #[cfg(test)]
 mod tests {
     use crate::{
-        decode_base64, encode_base64, AuthMethod, Client, CreateKmsKeyRequest, DecryptRequest,
-        EncryptRequest, GetKmsKeyRequest, ListKmsKeysRequest, SignRequest, UpdateKmsKeyRequest,
-        VerifyRequest,
+        decode_base64, encode_base64,
+        kms::{
+            CreateKmsKeyRequest, DecryptRequest, EncryptRequest, GetKmsKeyRequest,
+            ListKmsKeysRequest, SignRequest, UpdateKmsKeyRequest, VerifyRequest,
+        },
+        AuthMethod, Client,
     };
     use dotenvy::dotenv;
 

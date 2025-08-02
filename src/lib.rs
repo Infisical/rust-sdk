@@ -11,10 +11,14 @@ pub mod resources;
 #[cfg(test)]
 mod tests;
 
+pub mod secrets {
+    pub use crate::resources::secrets::*;
+}
+
+pub mod kms {
+    pub use crate::resources::kms::*;
+}
+
 pub use auth::AuthMethod;
 pub use client::Client;
-pub use resources::kms::{
-    decode_base64, encode_base64, CreateKmsKeyRequest, DecryptRequest, DeleteKmsKeyRequest,
-    EncryptRequest, GetKmsKeyByNameRequest, GetKmsKeyRequest, KmsKey, ListKmsKeysRequest,
-    SignRequest, UpdateKmsKeyRequest, VerifyRequest,
-};
+pub use resources::kms::{decode_base64, encode_base64};

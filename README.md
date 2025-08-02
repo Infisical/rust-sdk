@@ -14,7 +14,7 @@ The easiest way to get started is to use the builder pattern for both the client
 
 ```rust
 use infisical::{Client, AuthMethod, encode_base64, decode_base64};
-use infisical::resources::secrets::GetSecretRequest;
+use infisical::secrets::GetSecretRequest;
 use std::error::Error;
 
 async fn fetch_secret() -> Result<(), Box<dyn Error>> {
@@ -99,7 +99,7 @@ Create a new secret in your project.
 **Example**
 
 ```rust
-use infisical::resources::secrets::CreateSecretRequest;
+use infisical::secrets::CreateSecretRequest;
 
 let request = CreateSecretRequest::builder(
     "API_KEY",
@@ -129,7 +129,7 @@ Retrieve a specific secret by name.
 **Example**
 
 ```rust
-use infisical::resources::secrets::GetSecretRequest;
+use infisical::secrets::GetSecretRequest;
 
 let request = GetSecretRequest::builder("API_KEY", "<your-project-id>", "dev")
     .path("/")
@@ -152,7 +152,7 @@ List all secrets in a project and environment.
 **Example**
 
 ```rust
-use infisical::resources::secrets::ListSecretsRequest;
+use infisical::secrets::ListSecretsRequest;
 
 let request = ListSecretsRequest::builder("<your-project-id>", "dev")
     .path("/")
@@ -177,7 +177,7 @@ Update an existing secret.
 **Example**
 
 ```rust
-use infisical::resources::secrets::UpdateSecretRequest;
+use infisical::secrets::UpdateSecretRequest;
 
 let request = UpdateSecretRequest::builder("API_KEY", "<your-project-id>", "dev")
     .secret_value("new-secret-value") // Set the new value
@@ -203,7 +203,7 @@ Delete a secret from your project.
 **Example**
 
 ```rust
-use infisical::resources::secrets::DeleteSecretRequest;
+use infisical::secrets::DeleteSecretRequest;
 
 let request = DeleteSecretRequest::builder("API_KEY", "<your-project-id>", "dev")
     .path("/")
@@ -229,7 +229,7 @@ List all KMS keys in a project.
 **Example**
 
 ```rust
-use infisical::resources::kms::ListKmsKeysRequest;
+use infisical::kms::ListKmsKeysRequest;
 
 let request = ListKmsKeysRequest::builder("<your-project-id>").build();
 
@@ -247,7 +247,7 @@ Retrieve a specific KMS key by ID.
 **Example**
 
 ```rust
-use infisical::resources::kms::GetKmsKeyRequest;
+use infisical::kms::GetKmsKeyRequest;
 
 let request = GetKmsKeyRequest::builder("<key-id>").build();
 
@@ -265,7 +265,7 @@ Retrieve a specific KMS key by name.
 **Example**
 
 ```rust
-use infisical::resources::kms::GetKmsKeyByNameRequest;
+use infisical::kms::GetKmsKeyByNameRequest;
 
 let request = GetKmsKeyByNameRequest::builder("<key-name>").build();
 
@@ -283,7 +283,7 @@ Create a new KMS key in your project.
 **Example**
 
 ```rust
-use infisical::resources::kms::CreateKmsKeyRequest;
+use infisical::kms::CreateKmsKeyRequest;
 
 let request = CreateKmsKeyRequest::builder("<your-project-id>", "my-key")
     .description("A key for encryption operations")
@@ -308,7 +308,7 @@ Update an existing KMS key.
 **Example**
 
 ```rust
-use infisical::resources::kms::UpdateKmsKeyRequest;
+use infisical::kms::UpdateKmsKeyRequest;
 
 let request = UpdateKmsKeyRequest::builder("<key-id>")
     .name("updated-key-name")
@@ -333,7 +333,7 @@ Delete a KMS key from your project.
 **Example**
 
 ```rust
-use infisical::resources::kms::DeleteKmsKeyRequest;
+use infisical::kms::DeleteKmsKeyRequest;
 
 let request = DeleteKmsKeyRequest::builder("<key-id>").build();
 
@@ -351,7 +351,7 @@ Encrypt data using a KMS key.
 **Example**
 
 ```rust
-use infisical::resources::kms::EncryptRequest;
+use infisical::kms::EncryptRequest;
 
 let request = EncryptRequest::builder("<key-id>", "sensitive data").build();
 
@@ -369,7 +369,7 @@ Decrypt data using a KMS key.
 **Example**
 
 ```rust
-use infisical::resources::kms::DecryptRequest;
+use infisical::kms::DecryptRequest;
 
 let request = DecryptRequest::builder("<key-id>", "encrypted-data").build();
 
@@ -387,7 +387,7 @@ Sign data using a KMS key.
 **Example**
 
 ```rust
-use infisical::resources::kms::SignRequest;
+use infisical::kms::SignRequest;
 
 let request = SignRequest::builder("<key-id>", "data to sign")
     .signing_algorithm("RSASSA_PSS_SHA_512")
@@ -410,7 +410,7 @@ Verify a signature using a KMS key.
 **Example**
 
 ```rust
-use infisical::resources::kms::VerifyRequest;
+use infisical::kms::VerifyRequest;
 
 let request = VerifyRequest::builder("<key-id>", "data to sign", "signature")
     .signing_algorithm("RSASSA_PSS_SHA_512")

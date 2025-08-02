@@ -3,8 +3,10 @@
 //
 // INFISICAL_CLIENT_ID="your_client_id"
 // INFISICAL_CLIENT_SECRET="your_client_secret"
-// INFISICAL_PROJECT_ID="your_project_id"
 // INFISICAL_BASE_URL="your_hosted_url" - defaults to http://localhost:8080
+//
+// INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID="your_project_id"
+// INFISICAL_KMS_PROJECT_ID="your_project_id"
 //
 // cargo test -- --ignored --nocapture
 
@@ -25,11 +27,13 @@ async fn test_get_secret() {
     let client_id = std::env::var("INFISICAL_CLIENT_ID").expect("INFISICAL_CLIENT_ID must be set");
     let client_secret =
         std::env::var("INFISICAL_CLIENT_SECRET").expect("INFISICAL_CLIENT_SECRET must be set");
-    let project_id =
-        std::env::var("INFISICAL_PROJECT_ID").expect("INFISICAL_PROJECT_ID must be set");
+    let project_id = std::env::var("INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID")
+        .expect("INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID must be set");
+    let base_url =
+        std::env::var("INFISICAL_BASE_URL").unwrap_or("http://localhost:8080".to_string());
 
     let mut client = Client::builder()
-        .base_url("http://localhost:8080")
+        .base_url(&base_url)
         .build()
         .await
         .expect("Failed to build client");
@@ -62,11 +66,13 @@ async fn test_list_secrets() {
     let client_id = std::env::var("INFISICAL_CLIENT_ID").expect("INFISICAL_CLIENT_ID must be set");
     let client_secret =
         std::env::var("INFISICAL_CLIENT_SECRET").expect("INFISICAL_CLIENT_SECRET must be set");
-    let project_id =
-        std::env::var("INFISICAL_PROJECT_ID").expect("INFISICAL_PROJECT_ID must be set");
+    let project_id = std::env::var("INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID")
+        .expect("INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID must be set");
+    let base_url =
+        std::env::var("INFISICAL_BASE_URL").unwrap_or("http://localhost:8080".to_string());
 
     let mut client = Client::builder()
-        .base_url("http://localhost:8080")
+        .base_url(&base_url)
         .build()
         .await
         .expect("Failed to build client");
@@ -99,11 +105,13 @@ async fn test_create_and_delete_secret() {
     let client_id = std::env::var("INFISICAL_CLIENT_ID").expect("INFISICAL_CLIENT_ID must be set");
     let client_secret =
         std::env::var("INFISICAL_CLIENT_SECRET").expect("INFISICAL_CLIENT_SECRET must be set");
-    let project_id =
-        std::env::var("INFISICAL_PROJECT_ID").expect("INFISICAL_PROJECT_ID must be set");
+    let project_id = std::env::var("INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID")
+        .expect("INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID must be set");
+    let base_url =
+        std::env::var("INFISICAL_BASE_URL").unwrap_or("http://localhost:8080".to_string());
 
     let mut client = Client::builder()
-        .base_url("http://localhost:8080")
+        .base_url(&base_url)
         .build()
         .await
         .expect("Failed to build client");
@@ -159,11 +167,13 @@ async fn test_update_secret() {
     let client_id = std::env::var("INFISICAL_CLIENT_ID").expect("INFISICAL_CLIENT_ID must be set");
     let client_secret =
         std::env::var("INFISICAL_CLIENT_SECRET").expect("INFISICAL_CLIENT_SECRET must be set");
-    let project_id =
-        std::env::var("INFISICAL_PROJECT_ID").expect("INFISICAL_PROJECT_ID must be set");
+    let project_id = std::env::var("INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID")
+        .expect("INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID must be set");
+    let base_url =
+        std::env::var("INFISICAL_BASE_URL").unwrap_or("http://localhost:8080".to_string());
 
     let mut client = Client::builder()
-        .base_url("http://localhost:8080")
+        .base_url(&base_url)
         .build()
         .await
         .expect("Failed to build client");
@@ -218,6 +228,7 @@ mod tests {
         EncryptRequest, GetKmsKeyRequest, ListKmsKeysRequest, SignRequest, UpdateKmsKeyRequest,
         VerifyRequest,
     };
+    use dotenvy::dotenv;
 
     #[tokio::test]
     #[ignore = "This test requires a running Infisical instance and valid credentials"]
@@ -226,13 +237,14 @@ mod tests {
         // Note: This test will not actually run without proper authentication
         // It's meant to show the API structure and usage patterns
 
+        dotenv().ok();
+
         let client_id =
             std::env::var("INFISICAL_CLIENT_ID").expect("INFISICAL_CLIENT_ID must be set");
         let client_secret =
             std::env::var("INFISICAL_CLIENT_SECRET").expect("INFISICAL_CLIENT_SECRET must be set");
-        let project_id =
-            std::env::var("INFISICAL_PROJECT_ID").expect("INFISICAL_PROJECT_ID must be set");
-
+        let project_id = std::env::var("INFISICAL_KMS_PROJECT_ID")
+            .expect("INFISICAL_KMS_PROJECT_ID must be set");
         let base_url =
             std::env::var("INFISICAL_BASE_URL").unwrap_or("http://localhost:8080".to_string());
 
@@ -306,7 +318,7 @@ mod tests {
 
         // Example: Sign data
         let sign_request = SignRequest::builder(&signing_key.id, encode_b64("data to sign"))
-            .signing_algorithm("RSASSA_PSS_SHA_512")
+            .signing_algorithm("RSASSA_PKCS1_V1_5_SHA_256")
             .is_digest(false)
             .build();
         let signature = client.kms().sign(sign_request).await.unwrap();
@@ -317,7 +329,7 @@ mod tests {
             encode_b64("data to sign"),
             &signature.signature,
         )
-        .signing_algorithm("RSASSA_PSS_SHA_512")
+        .signing_algorithm("RSASSA_PKCS1_V1_5_SHA_256")
         .is_digest(false)
         .build();
         let verification = client.kms().verify(verify_request).await.unwrap();
@@ -343,7 +355,6 @@ mod tests {
 
         println!("Now its time for some cleanups!");
 
-        // cleanup the created kets
         // Cleanup: Delete the created keys
         let delete_encrypt_request =
             crate::resources::kms::DeleteKmsKeyRequest::builder(&key.id).build();

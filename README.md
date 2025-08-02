@@ -463,8 +463,11 @@ For development and testing, you'll need to set up environment variables. Create
 ```env
 INFISICAL_CLIENT_ID=your_client_id_here
 INFISICAL_CLIENT_SECRET=your_client_secret_here
-INFISICAL_PROJECT_ID=your_project_id_here
 INFISICAL_BASE_URL=http://localhost:8080  # Optional: for local development
+
+# Project IDs for different resources
+INFISICAL_SECRETS_MANAGEMENT_PROJECT_ID=your_project_id_here
+INFISICAL_KMS_PROJECT_ID=your_project_id_here
 ```
 
 ### Getting Credentials

@@ -1,8 +1,11 @@
 [package]
 name = "infisical"
-version = "0.0.4"
+version = "0.0.2"
 edition = "2021"
-authors = ["Daniel H. <daniel@infisical.com>", "Andrey L. <andrey@infisical.com>"]
+authors = [
+  "Daniel H. <daniel@infisical.com>",
+  "Andrey L. <andrey@infisical.com>",
+]
 description = "Official Rust SDK for Infisical"
 license = "MIT"
 readme = "README.md"

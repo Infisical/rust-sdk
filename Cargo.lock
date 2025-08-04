@@ -529,7 +529,7 @@ dependencies = [
 
 [[package]]
 name = "infisical"
-version = "0.0.4"
+version = "0.0.2"
 dependencies = [
  "base64",
  "dotenvy",

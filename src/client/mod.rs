@@ -158,12 +158,12 @@ impl Client {
     }
 
     /// Access secrets operations.
-    pub fn secrets(&self) -> SecretsClient {
+    pub fn secrets(&self) -> SecretsClient<'_> {
         SecretsClient::new(self)
     }
 
     /// Access KMS operations.
-    pub fn kms(&self) -> KmsClient {
+    pub fn kms(&self) -> KmsClient<'_> {
         KmsClient::new(self)
     }
 }

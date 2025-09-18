@@ -16,7 +16,7 @@ homepage = "https://infisical.com"
 include = ["**/*.rs", "Cargo.toml"]
 
 [dependencies]
-reqwest = { version = "0.12", features = ['json', 'blocking', 'rustls-tls'] }
+reqwest = { version = "0.12", features = ['json', 'blocking', 'rustls-tls', 'http2'], default-features = false }
 tokio = { version = "1.46", features = ["full"] }
 serde = { version = "1", features = ['derive'] }
 serde_json = "1"

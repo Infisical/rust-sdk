@@ -1,5 +1,10 @@
+use aws_sigv4::http_request::SigningError;
 use base64::DecodeError;
-use reqwest::{header::InvalidHeaderValue, StatusCode};
+use reqwest::{
+    header::{InvalidHeaderName, InvalidHeaderValue},
+    StatusCode,
+};
+use serde_json::Error as SerdeError;
 use std::string::FromUtf8Error;
 use thiserror::Error;
 use url::ParseError;
@@ -7,9 +12,17 @@ use url::ParseError;
 /// Infisical Errors.
 #[derive(Debug, Error)]
 pub enum InfisicalError {
+    /// Failed to build a http request.
+    #[error("Failed to build a http request: {0}")]
+    RequestBuildError(#[from] http::Error),
+
     /// An unexpected response was returned from API causing a deserialization error.
     #[error("Failed to process API response: {0}")]
     RequestError(#[from] reqwest::Error),
+
+    /// Failed to create a valid authorization header name.
+    #[error("Failed to create authorization header: {0}")]
+    InvalidAuthHeaderName(#[from] InvalidHeaderName),
 
     /// Failed to create a valid authorization header value.
     #[error("Failed to create authorization header: {0}")]
@@ -22,6 +35,10 @@ pub enum InfisicalError {
     /// Invalid auth method configured.
     #[error("You do not have a valid auth method configured.")]
     InvalidAuthMethod,
+
+    /// Credentials cannot be used, they were either not provided or invalid.
+    #[error("Credentials were not provided or are invalid.")]
+    InvalidCredentials,
 
     /// Failed to parse a URL.
     #[error("Failed to parse URL: {0}")]
@@ -38,4 +55,12 @@ pub enum InfisicalError {
     /// Failed to convert bytes to UTF-8 string.
     #[error("Failed to convert bytes to UTF-8 string: {0}")]
     FromUtf8Error(#[from] FromUtf8Error),
+
+    /// Failed to create an AWS SignableRequest.
+    #[error("Failed to create an AWS SignableRequest: {0}")]
+    SigningError(#[from] SigningError),
+
+    /// Serialization/Deserialization error.
+    #[error("Serialization/Deserialization error: {0}")]
+    SerdeError(#[from] SerdeError),
 }

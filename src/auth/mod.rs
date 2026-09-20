@@ -1,6 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{error::InfisicalError, resources::helper::check_response};
+use crate::{
+    auth::aws::auth_flow::AwsAuthFlow, error::InfisicalError, resources::helper::check_response,
+};
+
+mod aws;
 
 /// Authentication methods for the Infisical API.
 #[derive(Debug, Clone)]
@@ -9,6 +13,9 @@ pub enum AuthMethod {
     UniversalAuth {
         client_id: String,
         client_secret: String,
+    },
+    AwsAuth {
+        identity_id: String,
     },
 }
 
@@ -21,6 +28,11 @@ impl AuthMethod {
         AuthMethod::UniversalAuth {
             client_id: client_id.into(),
             client_secret: client_secret.into(),
+        }
+    }
+    pub fn new_aws_auth(identity_id: impl Into<String>) -> Self {
+        AuthMethod::AwsAuth {
+            identity_id: identity_id.into(),
         }
     }
 }
@@ -60,6 +72,9 @@ impl AuthHelper {
             } => {
                 self.exchange_universal_auth(http_client, &client_id, &client_secret)
                     .await
+            }
+            AuthMethod::AwsAuth { identity_id } => {
+                AwsAuthFlow::try_access_token(http_client, &self.base_url, &identity_id).await
             }
         }
     }
